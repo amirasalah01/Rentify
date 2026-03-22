@@ -8,18 +8,20 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const token = localStorage.getItem('access')
-    if (token) {
-      api.get('/api/auth/profile/')
-        .then(res => setUser(res.data))
-        .catch(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem('access')
+      if (token) {
+        try {
+          const res = await api.get('/api/auth/profile/')
+          setUser(res.data)
+        } catch {
           localStorage.removeItem('access')
           localStorage.removeItem('refresh')
-        })
-        .finally(() => setLoading(false))
-    } else {
+        }
+      }
       setLoading(false)
     }
+    checkAuth()
   }, [])
 
   const login = async (email, password) => {
@@ -45,6 +47,7 @@ export function AuthProvider({ children }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   return useContext(AuthContext)
 }

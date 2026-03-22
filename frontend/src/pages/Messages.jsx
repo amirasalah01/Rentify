@@ -51,15 +51,22 @@ export default function Messages() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    setLoading(true)
-    Promise.all([
-      api.get('/api/messages/inbox/'),
-      api.get('/api/messages/sent/')
-    ]).then(([inRes, sentRes]) => {
-      setInbox(Array.isArray(inRes.data) ? inRes.data : (inRes.data.results || []))
-      setSent(Array.isArray(sentRes.data) ? sentRes.data : (sentRes.data.results || []))
-    }).catch(() => setError('Failed to load messages.'))
-      .finally(() => setLoading(false))
+    const fetchMessages = async () => {
+      setLoading(true)
+      try {
+        const [inRes, sentRes] = await Promise.all([
+          api.get('/api/messages/inbox/'),
+          api.get('/api/messages/sent/')
+        ])
+        setInbox(Array.isArray(inRes.data) ? inRes.data : (inRes.data.results || []))
+        setSent(Array.isArray(sentRes.data) ? sentRes.data : (sentRes.data.results || []))
+      } catch {
+        setError('Failed to load messages.')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchMessages()
   }, [])
 
   const handleOpen = async (msg) => {
