@@ -86,10 +86,13 @@ export default function PropertyDetail() {
       <style>{`
         .property-hero {
           background: linear-gradient(135deg, #2563eb33, #f59e0b22);
-          padding: 4rem 1.5rem;
+          padding: 3rem 1.5rem;
           text-align: center;
-          font-size: 6rem;
+          font-size: 4rem;
           margin-bottom: 2rem;
+        }
+        @media (max-width: 480px) {
+          .property-hero { font-size: 3rem; padding: 2rem 1rem; }
         }
         .property-detail-grid {
           display: grid;
