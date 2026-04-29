@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Properties - RentMe</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .property-card:hover { transform: translateY(-3px); transition: transform 0.2s; box-shadow: 0 6px 20px rgba(0,0,0,.12); }
+        .property-card { transition: transform 0.2s; }
+        .navbar-brand { font-weight: 700; font-size: 1.5rem; }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}"><i class="bi bi-house-heart-fill"></i> RentMe</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item"><a class="nav-link" th:href="@{/}">Home</a></li>
+                <li class="nav-item"><a class="nav-link active" th:href="@{/properties}">Properties</a></li>
+            </ul>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <a class="nav-link" th:href="@{/dashboard}">Dashboard</a>
+                </li>
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <a class="nav-link" th:href="@{/messages}">Messages</a>
+                </li>
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <form th:action="@{/auth/logout}" method="post" class="d-inline">
+                        <button type="submit" class="nav-link btn btn-link text-white">Logout</button>
+                    </form>
+                </li>
+                <li class="nav-item" sec:authorize="!isAuthenticated()">
+                    <a class="nav-link" th:href="@{/auth/login}">Login</a>
+                </li>
+                <li class="nav-item" sec:authorize="!isAuthenticated()">
+                    <a class="nav-link" th:href="@{/auth/register}">Register</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid my-4 flex-grow-1">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="card shadow-sm sticky-top" style="top:70px">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-funnel"></i> Search &amp; Filter
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/properties}" method="get">
+                        <div class="mb-3">
+                            <label class="form-label">Keyword</label>
+                            <input type="text" name="keyword" class="form-control"
+                                   th:value="${keyword}" placeholder="Title, city...">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">City</label>
+                            <input type="text" name="city" class="form-control"
+                                   th:value="${city}" placeholder="City name">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Property Type</label>
+                            <select name="type" class="form-select">
+                                <option value="">All Types</option>
+                                <option th:each="t : ${propertyTypes}"
+                                        th:value="${t.name()}"
+                                        th:text="${t.name()}"
+                                        th:selected="${t == type}">Type</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Min Price ($/mo)</label>
+                            <input type="number" name="minPrice" class="form-control"
+                                   th:value="${minPrice}" min="0" step="100">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Max Price ($/mo)</label>
+                            <input type="number" name="maxPrice" class="form-control"
+                                   th:value="${maxPrice}" min="0" step="100">
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-search"></i> Search
+                            </button>
+                            <a th:href="@{/properties}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x"></i> Clear
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Property Grid -->
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0">
+                    <span th:text="${properties.size()}">0</span> Properties Found
+                </h4>
+                <a sec:authorize="isAuthenticated()" th:href="@{/properties/new}"
+                   class="btn btn-success">
+                    <i class="bi bi-plus-circle"></i> List Property
+                </a>
+            </div>
+
+            <div class="alert alert-info" th:if="${#lists.isEmpty(properties)}">
+                <i class="bi bi-info-circle"></i> No properties found matching your criteria.
+            </div>
+
+            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4"
+                 th:unless="${#lists.isEmpty(properties)}">
+                <div class="col" th:each="p : ${properties}">
+                    <div class="card h-100 property-card shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge bg-info text-dark" th:text="${p.propertyType}">TYPE</span>
+                                <span class="badge bg-success" th:if="${p.available}">Available</span>
+                            </div>
+                            <h5 class="card-title" th:text="${p.title}">Title</h5>
+                            <p class="text-muted small mb-2">
+                                <i class="bi bi-geo-alt"></i>
+                                <span th:text="${p.city + ', ' + p.country}">Location</span>
+                            </p>
+                            <p class="card-text small text-truncate"
+                               th:text="${p.description}">Description</p>
+                            <div class="d-flex gap-3 small text-muted mb-3">
+                                <span><i class="bi bi-door-closed"></i>
+                                    <span th:text="${p.bedrooms}">0</span> bed</span>
+                                <span><i class="bi bi-droplet"></i>
+                                    <span th:text="${p.bathrooms}">0</span> bath</span>
+                                <span th:if="${p.squareFeet > 0}">
+                                    <i class="bi bi-arrows-fullscreen"></i>
+                                    <span th:text="${#numbers.formatDecimal(p.squareFeet,1,'COMMA',0,'POINT')}">0</span> sq ft
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fs-5 fw-bold text-primary">
+                                    $<span th:text="${#numbers.formatDecimal(p.pricePerMonth,1,'COMMA',0,'POINT')}">0</span>/mo
+                                </span>
+                                <a th:href="@{/properties/{id}(id=${p.id})}"
+                                   class="btn btn-sm btn-outline-primary">View Details</a>
+                            </div>
+                        </div>
+                        <div class="card-footer text-muted small">
+                            <i class="bi bi-eye"></i> <span th:text="${p.viewCount}">0</span> views
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="bg-dark text-light py-3 mt-auto">
+    <div class="container text-center">
+        <p class="mb-0">&copy; 2024 RentMe</p>
+    </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
