@@ -17,9 +17,6 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
 
-<div th:replace="~{fragments/navbar :: nav}"></div>
-<nav th:insert="~{fragments/navbar}" class="d-none"></nav>
-<!-- Inline navbar since fragment approach for this template -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
     <div class="container">
         <a class="navbar-brand" th:href="@{/}"><i class="bi bi-house-heart-fill"></i> RentMe</a>
